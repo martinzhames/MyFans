@@ -163,6 +163,55 @@ describe('SecurityHeadersMiddleware', () => {
         expect(mockResponse.removeHeader).toHaveBeenCalledWith('Server');
     });
 
+    /**
+     * Helmet integration smoke-test.
+     *
+     * helmet() is wired in main.ts before SecurityHeadersMiddleware.
+     * These tests verify that the custom middleware does not accidentally
+     * undo the headers that helmet sets (i.e. they are not removed).
+     * Full helmet behaviour is covered by helmet's own test suite.
+     */
+    describe('helmet compatibility', () => {
+        it('should not remove X-DNS-Prefetch-Control (set by helmet)', () => {
+            middleware.use(
+                mockRequest as Request,
+                mockResponse as Response,
+                mockNext,
+            );
+
+            const removedHeaders: string[] = (mockResponse.removeHeader as jest.Mock).mock.calls.map(
+                (call: string[]) => call[0],
+            );
+            expect(removedHeaders).not.toContain('X-DNS-Prefetch-Control');
+        });
+
+        it('should not remove X-Download-Options (set by helmet)', () => {
+            middleware.use(
+                mockRequest as Request,
+                mockResponse as Response,
+                mockNext,
+            );
+
+            const removedHeaders: string[] = (mockResponse.removeHeader as jest.Mock).mock.calls.map(
+                (call: string[]) => call[0],
+            );
+            expect(removedHeaders).not.toContain('X-Download-Options');
+        });
+
+        it('should not remove Origin-Agent-Cluster (set by helmet)', () => {
+            middleware.use(
+                mockRequest as Request,
+                mockResponse as Response,
+                mockNext,
+            );
+
+            const removedHeaders: string[] = (mockResponse.removeHeader as jest.Mock).mock.calls.map(
+                (call: string[]) => call[0],
+            );
+            expect(removedHeaders).not.toContain('Origin-Agent-Cluster');
+        });
+    });
+
     describe('in development mode', () => {
         beforeAll(() => {
             process.env.NODE_ENV = 'development';

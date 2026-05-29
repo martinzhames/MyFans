@@ -1,7 +1,7 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import type { Request, Response, NextFunction } from 'express';
 import * as cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { StartupProbeService } from './health/startup-probe.service';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -20,11 +20,22 @@ async function bootstrap() {
     cors: corsOptions,
   });
 
-  // Apply security headers middleware
-  const securityHeadersMiddleware = new SecurityHeadersMiddleware();
-  app.use((req: Request, res: Response, next: NextFunction) =>
-    securityHeadersMiddleware.use(req, res, next),
+  // Helmet provides a secure baseline for HTTP response headers.
+  // Our custom SecurityHeadersMiddleware runs after helmet and overrides
+  // specific directives (CSP, HSTS, cross-origin policies) with
+  // environment-aware values.
+  app.use(
+    helmet({
+      // CSP is managed by SecurityHeadersMiddleware with env-aware directives.
+      contentSecurityPolicy: false,
+      // HSTS is managed by SecurityHeadersMiddleware (production-only).
+      strictTransportSecurity: false,
+    }),
   );
+
+  // Apply environment-aware security headers (CSP, HSTS, cross-origin policies).
+  const securityHeadersMiddleware = new SecurityHeadersMiddleware();
+  app.use((req, res, next) => securityHeadersMiddleware.use(req, res, next));
 
   app.use(cookieParser());
 
@@ -34,17 +45,6 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains',
-    );
-    next();
-  });
 
   const probeService = app.get(StartupProbeService);
 

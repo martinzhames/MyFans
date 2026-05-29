@@ -102,3 +102,7 @@ chmod +x setup.sh
 ## Reporting Issues
 
 Please use the issue templates for bug reports, feature requests, and security issues.
+
+## API Reference
+
+For a step-by-step guide to running the backend API locally and making your first requests, see [`backend/docs/API_QUICKSTART.md`](./backend/docs/API_QUICKSTART.md).

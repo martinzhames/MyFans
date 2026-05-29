@@ -39,11 +39,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       # ── Cargo cache ────────────────────────────────────────────────────────
       - name: Cache Cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry/index
@@ -56,12 +56,21 @@ jobs:
             ${{ runner.os }}-cargo-registry-msrv-
 
       - name: Cache Cargo target (MSRV)
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: contract/target
           key: ${{ runner.os }}-contract-target-msrv-${{ matrix.rust }}-${{ hashFiles('contract/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-contract-target-msrv-${{ matrix.rust }}-
+
+      # Cache WASM artifacts for MSRV builds so re-runs skip the wasm32 compile.
+      - name: Cache WASM release artifacts (MSRV)
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: contract/target/wasm32-unknown-unknown/release
+          key: ${{ runner.os }}-contract-wasm-msrv-${{ matrix.rust }}-${{ hashFiles('contract/**/*.rs', 'contract/Cargo.lock', 'contract/**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-contract-wasm-msrv-${{ matrix.rust }}-
 
       # ── Toolchain ──────────────────────────────────────────────────────────
       # Install the exact MSRV toolchain.  No Stellar CLI is installed here;
@@ -70,6 +79,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
+          targets: wasm32-unknown-unknown
 
       # Confirm the active toolchain matches what we requested.
       - name: Show toolchain info

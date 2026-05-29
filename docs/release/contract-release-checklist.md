@@ -96,6 +96,14 @@ Use this checklist for every production contract release from `contract/`. It en
 | Security | `@name` | `Pending / Approved` | `...` |
 | Product / Support | `@name` | `Pending / Approved` | `...` |
 
+## Related Documents
+
+- [Contract Deploy Runbook](./CONTRACT_DEPLOY_RUNBOOK.md) — step-by-step deploy instructions
+- [Rollback Template](./ROLLBACK_TEMPLATE.md)
+- [Smoke Test Matrix](./SMOKE_TEST_MATRIX.md)
+- [Contract Upgrade Governance](../CONTRACT_UPGRADE_GOVERNANCE.md)
+- [Deployed Env Variable Reference](../../contract/docs/DEPLOYED_ENV.md)
+
 ## Automated Verification
 
 Run the automated release checklist script:
